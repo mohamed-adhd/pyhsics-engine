@@ -10,8 +10,6 @@
 ![Physics](https://img.shields.io/badge/Physics-AABB%20%2B%20Impulse-7c3aed?style=for-the-badge)
 ![Status](https://img.shields.io/badge/status-learning%20sandbox-f97316?style=for-the-badge)
 
-![Window](window.png)
-
 </div>
 
 ---
@@ -44,6 +42,47 @@ The project is small enough to understand in one sitting, but it already include
 | Object inspector | Right-click an object to view its name, mass, and color. |
 | Add-object panel | Create objects from the in-app menu using name, mass, and Pygame color. |
 | SQLite save/load | Newly added objects are written to `database/data.db`. |
+
+---
+
+## Architecture
+
+```text
+app.py
+|-- initializes Pygame and the 1280x720 window
+|-- creates starter dynamic bodies and static boundaries
+|-- owns the main event loop
+|-- handles mouse input, keyboard input, buttons, and side-panel state
+|-- creates new objects from text fields
+|-- calls world.update(dt)
+|-- calls world.render()
+`-- calls world.write() to persist newly created objects
+
+source.py
+|-- Button
+|   `-- small hover/click UI helper
+|
+|-- textzone
+|   `-- focused text input field for name, mass, and color
+|
+|-- object
+|   |-- stores body position, size, mass, velocity, acceleration, color, and flags
+|   |-- applies forces
+|   |-- applies impulses
+|   |-- integrates motion
+|   `-- renders itself as a Pygame rectangle
+|
+`-- world
+    |-- stores every body in the simulation
+    |-- applies gravity
+    |-- applies drag forces
+    |-- detects AABB overlaps
+    |-- resolves collisions with impulses
+    |-- handles picking, releasing, and inspection
+    `-- loads/saves user-created objects through SQLite
+```
+
+The project is split cleanly between orchestration and simulation. `app.py` decides what happens each frame; `source.py` defines the reusable pieces that make the world behave.
 
 ---
 
@@ -255,12 +294,10 @@ This is a learning-focused engine, so the simple design is part of the point.
 
 ---
 
-## Why This Project Is Useful
+## Why I Built This
 
-This repo is a practical base for learning how small game engines work. It touches the full loop: input, simulation, collision, rendering, UI, and persistence. Because the code is compact, it is also a good place to experiment with new physics features without getting buried in a large framework.
-
----
+>wanted to try somehting that allows me to use both my physics knowledge and coding skills
 
 ## License
 
-No license file is currently included. Add one before publishing or distributing the project.
+not yet 
