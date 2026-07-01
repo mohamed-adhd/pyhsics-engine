@@ -235,6 +235,9 @@ This engine is a learning-focused sandbox, so a few parts are intentionally simp
 - **SQLite** for simple local persistence.
 
 ---
+## why i built this
+ - i ve been always attracted to physics since a long time , so i wannted to build something
+ - that allows me to use coding and apply physics as well
 
 ## Educational Value
 
