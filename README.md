@@ -1,144 +1,108 @@
+<div align="center">
+
 # Pyhsics Engine
 
-> A small interactive 2D physics sandbox built with Python, Pygame, simple mathematical integration, AABB collision detection, and SQLite persistence.
+### A tiny 2D physics sandbox built from scratch with Python, Pygame, math, and SQLite.
 
-Pyhsics Engine is an experimental physics playground where rectangular bodies fall under gravity, collide with each other, bounce using impulse response, and can be dragged around with the mouse. It also includes a slide-out menu for creating new objects and a small inspector panel for reading object information.
+![Python](https://img.shields.io/badge/Python-3.x-3776ab?style=for-the-badge&logo=python&logoColor=white)
+![Pygame](https://img.shields.io/badge/Pygame-2D%20engine-22c55e?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/SQLite-persistence-2563eb?style=for-the-badge&logo=sqlite&logoColor=white)
+![Physics](https://img.shields.io/badge/Physics-AABB%20%2B%20Impulse-7c3aed?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-learning%20sandbox-f97316?style=for-the-badge)
 
-The project is intentionally compact: the application loop lives in `app.py`, while the physics primitives, UI widgets, world simulation, and persistence logic live in `source.py`.
+![Window](window.png)
 
----
-
-## Preview
-
-The app opens a `1280 x 720` Pygame window with:
-
-- A beige simulation canvas.
-- Dynamic rectangular objects affected by gravity.
-- Static boundary walls, floor, and ceiling.
-- A slide-out side panel styled with `window.png`.
-- Menu controls for adding new objects.
-- Right-click object inspection.
+</div>
 
 ---
 
-## Features
+## What Is This?
 
-### Physics Simulation
+**Pyhsics Engine** is a compact interactive physics playground where rectangular bodies fall, collide, bounce, and respond to mouse dragging. It is built around a simple but real physics loop: forces change acceleration, acceleration changes velocity, velocity changes position, and collisions are solved with AABB overlap checks plus impulse response.
 
-- **Gravity-based motion** applied every frame.
-- **Velocity and acceleration integration** using frame delta time.
-- **Static and dynamic bodies** so walls and floors can stay fixed while objects move.
-- **Mouse dragging** using a spring-like force model.
-- **Axis-aligned bounding box collision detection** for rectangular objects.
-- **Impulse-based collision response** using object mass and restitution.
-- **Penetration correction** to separate overlapping objects after collision.
+The project is small enough to understand in one sitting, but it already includes the foundations of a real 2D simulation engine:
 
-### Object System
+| Layer | What it does |
+| --- | --- |
+| `app.py` | Runs the Pygame window, event loop, panels, buttons, and object creation flow. |
+| `source.py` | Defines UI widgets, physics bodies, world simulation, collisions, dragging, rendering, and SQLite persistence. |
+| `database/data.db` | Stores user-created objects so they can load again on startup. |
+| `window.png` | Visual panel asset used by the slide-out menu. |
 
-Each simulated object stores:
+---
 
-- Position: `x`, `y`
-- Size: `w`, `h`
-- Mass
-- Restitution
-- Friction value
-- Static/dynamic state
-- Velocity and acceleration
-- Color
-- Name
+## Highlights
 
-### Interactive UI
+| Feature | Description |
+| --- | --- |
+| Gravity | Every dynamic body receives downward force each frame. |
+| Dynamic bodies | Moving rectangles have mass, velocity, acceleration, restitution, color, and name. |
+| Static bodies | Floor, ceiling, and walls stay fixed while still colliding with objects. |
+| AABB collisions | Rectangle overlap is detected on the X and Y axes. |
+| Impulse response | Objects bounce using relative velocity, inverse mass, and restitution. |
+| Mouse dragging | Dragged objects follow the cursor using a spring-like force. |
+| Object inspector | Right-click an object to view its name, mass, and color. |
+| Add-object panel | Create objects from the in-app menu using name, mass, and Pygame color. |
+| SQLite save/load | Newly added objects are written to `database/data.db`. |
 
-- Left-click and drag dynamic objects.
-- Right-click an object to inspect its name, mass, and color.
-- Open the menu to add new objects.
-- Type object name, mass, and Pygame color name.
-- Validate required fields before creating an object.
-- Animated side panel for add/inspect workflows.
+---
 
-### Persistence
-
-Newly created objects are saved to:
+## Visual Flow
 
 ```text
-database/data.db
-```
-
-The SQLite database contains an `objects` table:
-
-```sql
-CREATE TABLE "objects" (
-    "name" TEXT NOT NULL,
-    "mass" INTEGER NOT NULL,
-    "color" TEXT NOT NULL
-);
-```
-
-Saved objects are loaded back into the world when the app starts.
-
----
-
-## Project Structure
-
-```text
-pyhsics-engine/
-|-- app.py              # Main Pygame application loop and UI flow
-|-- source.py           # Physics objects, world simulation, buttons, text inputs
-|-- window.png          # Side-panel image asset
-|-- database/
-|   `-- data.db         # SQLite database for saved objects
-|-- objects.db          # Empty database file currently unused by the app
-|-- requirements.txt    # Dependency list placeholder
-`-- README.md           # Project documentation
+Pygame Events
+     |
+     v
+Input + UI Handling
+     |
+     v
+Apply Forces -> Integrate Motion -> Detect Collisions -> Resolve Impulses
+     |
+     v
+Render World + Slide-out Panel
+     |
+     v
+Persist New Objects
 ```
 
 ---
 
-## How It Works
+## Physics Core
 
-### Main Loop
+The simulation is intentionally clear and direct.
 
-`app.py` creates the window, initializes the world, adds starter objects and static boundaries, then runs a 60 FPS loop:
+### Force Integration
 
-1. Read Pygame events.
-2. Handle mouse, keyboard, buttons, and text fields.
-3. Update physics using `dt`.
-4. Render all objects.
-5. Draw the slide-out UI panel.
-6. Save newly created objects to SQLite.
-
-### Physics Object
-
-The `object` class in `source.py` represents a rectangle in the world. Dynamic objects respond to forces and impulses:
+Dynamic objects receive forces, convert them into acceleration, then update velocity and position using delta time:
 
 ```python
-obj.appforce(fx, fy)
-obj.appimp(jx, jy)
-obj.update(dt)
+self.vx += dt * self.ax
+self.vy += dt * self.ay
+self.x += dt * self.vx
+self.y += dt * self.vy
 ```
 
-Static objects ignore forces and are useful for boundaries such as the floor, ceiling, and walls.
+### AABB Collision Detection
 
-### World Simulation
-
-The `world` class owns all objects and handles:
-
-- Applying gravity.
-- Applying mouse drag forces.
-- Updating object positions.
-- Detecting pairwise rectangle collisions.
-- Resolving collisions with impulses.
-- Rendering objects.
-- Loading and writing SQLite records.
-
-Collision detection uses AABB overlap:
+Collisions are detected by checking rectangle overlap:
 
 ```text
 overlap_x = min(a.right, b.right) - max(a.left, b.left)
 overlap_y = min(a.bottom, b.bottom) - max(a.top, b.top)
 ```
 
-The smaller overlap axis becomes the collision normal, then the engine applies an impulse based on relative velocity, inverse mass, and restitution.
+The smallest overlap axis becomes the collision normal.
+
+### Impulse Resolution
+
+When two bodies move toward each other, the engine computes an impulse using:
+
+- Relative velocity
+- Collision normal
+- Inverse mass
+- Restitution
+
+That impulse changes each body's velocity, producing a bounce.
 
 ---
 
@@ -146,19 +110,46 @@ The smaller overlap axis becomes the collision normal, then the engine applies a
 
 | Action | Control |
 | --- | --- |
-| Drag object | Left mouse button |
-| Release object | Release left mouse button |
-| Inspect object | Right mouse button on an object |
-| Open add-object panel | `menu` button |
-| Close panel | `X` button |
-| Type in fields | Click a field, then type |
-| Remove text | Backspace |
+| Drag a dynamic object | Left mouse button |
+| Release dragged object | Release left mouse button |
+| Inspect an object | Right mouse button |
+| Open add-object menu | `menu` button |
+| Close side panel | `X` button |
+| Type into a field | Click field, then type |
+| Delete text | Backspace |
 
 ---
 
-## Running Locally
+## Add Objects In-App
 
-### 1. Clone or open the project
+Open the menu and enter:
+
+| Field | Example | Notes |
+| --- | --- | --- |
+| `name` | `box01` | Short object label. |
+| `mass` | `1200` | Must be an integer. |
+| `color` | `yellow` | Must be a valid Pygame color name. |
+
+Valid color examples:
+
+```text
+red
+blue
+green
+yellow
+purple
+orange
+white
+black
+```
+
+When added, the object is inserted into the running world and saved into SQLite.
+
+---
+
+## Run It
+
+### 1. Go to the project
 
 ```bash
 cd /home/bro/my-creations/pyhsics-engine
@@ -179,7 +170,7 @@ source .venv/bin/activate
 pip install pygame numpy
 ```
 
-### 4. Run the app
+### 4. Launch the sandbox
 
 ```bash
 python app.py
@@ -187,69 +178,86 @@ python app.py
 
 ---
 
-## Adding Objects
+## Repository Map
 
-Open the menu and fill in:
-
-- `name`: any short object name.
-- `mass`: a positive integer.
-- `color`: a valid Pygame color name such as `red`, `blue`, `yellow`, `green`, or `purple`.
-
-When the object is added, it appears in the simulation and is saved to SQLite.
-
----
-
-## Current Limitations
-
-This engine is a learning-focused sandbox, so a few parts are intentionally simple:
-
-- Collision shapes are rectangles only.
-- Collision detection is pairwise and not spatially optimized.
-- Friction is stored on objects but is not yet fully applied in collision resolution.
-- `requirements.txt` does not yet list runtime dependencies.
-- The database path is currently absolute inside `source.py`.
-- The class name `object` shadows Python's built-in `object` type.
+```text
+pyhsics-engine/
+|-- app.py              # Main app, event loop, starter objects, menu flow
+|-- source.py           # Button, textzone, object, world, physics, SQLite
+|-- window.png          # Slide-out side panel image
+|-- database/
+|   `-- data.db         # SQLite database containing saved objects
+|-- objects.db          # Empty database file, currently unused
+|-- requirements.txt    # Placeholder dependency file
+`-- README.md           # This documentation
+```
 
 ---
 
-## Roadmap Ideas
+## SQLite Persistence
 
-- Add circles and polygon collision shapes.
-- Add friction response during contact resolution.
-- Replace the absolute database path with a project-relative path.
-- Fill `requirements.txt` with pinned dependencies.
-- Add pause, reset, and clear-world controls.
+The active database is:
+
+```text
+database/data.db
+```
+
+It contains:
+
+```sql
+CREATE TABLE "objects" (
+    "name" TEXT NOT NULL,
+    "mass" INTEGER NOT NULL,
+    "color" TEXT NOT NULL
+);
+```
+
+At startup, saved rows are loaded as dynamic objects. During runtime, newly created objects are inserted into the table.
+
+---
+
+## Current Limits
+
+This is a learning-focused engine, so the simple design is part of the point.
+
+| Limit | Why it matters |
+| --- | --- |
+| Rectangles only | No circles, polygons, or rotated bodies yet. |
+| Pairwise collision checks | Works fine for small scenes, but not optimized for many objects. |
+| Friction not fully solved | Objects store friction, but contact friction is not yet part of impulse resolution. |
+| Absolute database path | `source.py` currently opens the database with a machine-specific path. |
+| Empty requirements file | Dependencies should be added before sharing. |
+| Class named `object` | Works, but shadows Python's built-in `object` type. |
+
+---
+
+## Roadmap
+
+- Add circle bodies.
+- Add rotated rectangles or polygon collision.
+- Add friction impulses.
+- Add pause, reset, and clear-world buttons.
 - Add object editing and deletion.
-- Add camera zoom and panning.
-- Add broad-phase collision detection for better performance with many objects.
-- Add tests for collision response and persistence.
-- Rename `object` to `PhysicsBody` for clearer Python style.
+- Move the database path to a project-relative path.
+- Fill `requirements.txt`.
+- Add broad-phase collision detection.
+- Add tests for collisions and database persistence.
+- Rename `object` to `PhysicsBody`.
 
 ---
 
-## Tech Stack
+## Built With
 
-- **Python** for application logic.
-- **Pygame** for rendering, input, and window management.
-- **NumPy** imported for future numerical work.
-- **SQLite** for simple local persistence.
+![Python](https://img.shields.io/badge/Python-application%20logic-3776ab?style=flat-square&logo=python&logoColor=white)
+![Pygame](https://img.shields.io/badge/Pygame-rendering%20%2B%20input-22c55e?style=flat-square)
+![SQLite](https://img.shields.io/badge/SQLite-local%20database-2563eb?style=flat-square&logo=sqlite&logoColor=white)
+![Math](https://img.shields.io/badge/Math-vectors%20%2B%20impulses-7c3aed?style=flat-square)
 
 ---
-## why i built this
- - i ve been always attracted to physics since a long time , so i wannted to build something
- - that allows me to use coding and apply physics as well
 
-## Educational Value
+## Why This Project Is Useful
 
-This repository is a good foundation for learning:
-
-- Game loops and frame delta timing.
-- Force, acceleration, velocity, and position updates.
-- Basic rigid body simulation.
-- AABB collision detection.
-- Impulse-based collision response.
-- Simple immediate-mode UI in Pygame.
-- Local persistence with SQLite.
+This repo is a practical base for learning how small game engines work. It touches the full loop: input, simulation, collision, rendering, UI, and persistence. Because the code is compact, it is also a good place to experiment with new physics features without getting buried in a large framework.
 
 ---
 
