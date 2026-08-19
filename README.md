@@ -253,8 +253,6 @@ CREATE TABLE "objects" (
 
 At startup, saved rows are loaded as dynamic objects. During runtime, newly created objects are inserted into the table.
 
----
-
 ## Current Limits
 
 This is a learning-focused engine, so the simple design is part of the point.
@@ -268,22 +266,6 @@ This is a learning-focused engine, so the simple design is part of the point.
 | Empty requirements file | Dependencies should be added before sharing. |
 | Class named `object` | Works, but shadows Python's built-in `object` type. |
 
----
-
-## Roadmap
-
-- Add circle bodies.
-- Add rotated rectangles or polygon collision.
-- Add friction impulses.
-- Add pause, reset, and clear-world buttons.
-- Add object editing and deletion.
-- Move the database path to a project-relative path.
-- Fill `requirements.txt`.
-- Add broad-phase collision detection.
-- Add tests for collisions and database persistence.
-- Rename `object` to `PhysicsBody`.
-
----
 
 ## Built With
 
